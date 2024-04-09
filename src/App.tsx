@@ -38,7 +38,7 @@ function padZero(num: number) {
 }
 
 const loadCount = 10;
-const routes = ["onrender.com", "http://192.168.101.50:9999"]
+const routes = ["onrender.com", "https://192.168.101.50:9998"]
 // const routes = ["onrender.com", "http://192.168.101.11:9999"]
 
 function App() {
