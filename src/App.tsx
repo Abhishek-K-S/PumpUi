@@ -38,25 +38,17 @@ function padZero(num: number) {
 }
 
 const loadCount = 10;
-const routes = ["onrender.com", "https://192.168.101.50:9998"]
-// const routes = ["onrender.com", "http://192.168.101.11:9999"]
+const routes = ["https://pumpui.onrender.com", "http://192.168.101.50:9999"]
+const mode : 'ONLINE'|'OFFLINE'= 'OFFLINE';
+const route = mode == 'OFFLINE'? 1: 0;
+const device = 0
 
 function App() {
   const [activeState, setActiveState] = React.useState<ActiveState>({status: false});
-  // const [activeState, setActiveState] = React.useState<ActiveState>({status: true, data: {start_at: new Date().getTime(), last_ping: 0}});
-  const [device, setDevice] = React.useState<number>(0);
+  // const [activeState, setActiveState] = React.useState<ActiveState>({status: true, data: {start_at: new Date().getTime(), last_ping: new Date().getTime()+1000000}});
+  // const [device, setDevice] = React.useState<number>(0);
   const [startRuntime, setStartRuntime] = React.useState<number>(0);
   const [runtimes, setRuntimes] = React.useState<Runtimes>([]);
-  const [route, setRoute] = React.useState<number>(1);
-
-  const handleRouteChange = (event: React.FormEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    const id = Number(event.currentTarget.id);
-    console.log(id)
-    if(route !== id && id < routes.length){
-      setRoute(id);
-    }
-  }
 
   const axiosGet = async (url: string, params: undefined | {[key: string]: number}) => {
     const data = await axios.get(`${routes[route]}${url}`, {params: params, withCredentials: false});
@@ -96,24 +88,26 @@ function App() {
           <h3>Runtime</h3>
         </div>
       </div>
-      <div className="row">
+      {/* <div className="row">
         <div className="col">
           Device: 
           <input type="number" name="number" id="nb" className='half p-2 form-control' onChange={e=>setDevice(Number(e.target.value))} value={device} />
           <button className='btn btn-outline-danger'>Change device</button>
           
         </div>
-      </div>
+      </div> */}
       <div className="row py-3">
         <div className="col-12">
-          <button className="btn btn-primary me-4" id='0' onClick={handleRouteChange}>
-            Online
-          </button>
-          <button className="btn btn-primary" id='1' onClick={handleRouteChange}>
-            Local
-          </button>
+        {mode == 'OFFLINE' ? 
+            <a className="btn btn-primary me-4" id='0' href={routes[0]}>
+              Go Online
+            </a>
+            :
+            <a className="btn btn-primary" id='1' href={routes[1]}>
+              Go Wifi
+            </a>
+        }
         </div>
-        <div className="col-12">Accessing {routes[route]}</div>
       </div>
       <hr />
       <div className="row">
@@ -121,15 +115,17 @@ function App() {
         {
           activeState.status?
             <div className="col">
-              <h3 className="text-success">Running</h3>
+              <h2 className="text-success">Running</h2>
+              <span className='btn btn-outline-success mb-2'>{getTimeDifference(activeState.data?.start_at||0, activeState.data?.last_ping||0)}</span>
               <h5>Started: {new Date(activeState.data?.start_at || new Date().getTime()).toLocaleTimeString()}</h5>
             </div>
             :
               <div className="col">
-                <h3 className="text-danger">No</h3>
+                <h2 className="text-danger">No</h2>
               </div>
         }
         <hr />
+      </div>
         <div className="row">
           <div className="col">
             <h3>Logs</h3>
@@ -138,18 +134,17 @@ function App() {
         <div className="row">
           <div className="col border border-dark">
             {
-            runtimes.length? 
-              runtimes.map(entry=>{
-                const t1 = new Date(entry.start);
-                return <div className="p-2 border border-grey" key={entry.id}>
-                  <div className='py-1'><span className='btn btn-outline-success'>{getTimeDifference(entry.start, entry.stop)}</span> {t1.toLocaleTimeString('en-in', {hour12: true})} <b>-{'>'}</b> {new Date(entry.stop).toLocaleTimeString('en-in', {hour12: true})} <span className='text-body-secondary'>({t1.toLocaleDateString('en-in', {month: 'short', day: '2-digit'})})</span></div>
-                </div>
-              }
-              )
-            :
-              <div className='text-center'>No data</div>
-          }
-          </div>
+              runtimes.length? 
+                runtimes.map(entry=>{
+                  const t1 = new Date(entry.start);
+                  return <div className="p-2 border border-grey" key={entry.id}>
+                    <div className='py-1'><span className='btn btn-outline-success'>{getTimeDifference(entry.start, entry.stop)}</span> {t1.toLocaleTimeString('en-in', {hour12: true})} <b>-{'>'}</b> {new Date(entry.stop).toLocaleTimeString('en-in', {hour12: true})} <span className='text-body-secondary'>({t1.toLocaleDateString('en-in', {month: 'short', day: '2-digit'})})</span></div>
+                  </div>
+                }
+                )
+              :
+                <div className='text-center'>No data</div>
+            }
         </div>
       </div>
       <div className="row">
