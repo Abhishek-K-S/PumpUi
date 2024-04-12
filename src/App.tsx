@@ -38,9 +38,9 @@ function padZero(num: number) {
 }
 
 const loadCount = 10;
-const routes = ["https://pumpui.onrender.com", "http://192.168.101.50:9999"]
-const mode : 'ONLINE'|'OFFLINE'= 'OFFLINE';
-const route = mode == 'OFFLINE'? 1: 0;
+const routes = ["https://pumpruntime.onrender.com"]
+const mode: 'ONLINE' | 'OFFLINE' = 'ONLINE';
+const route = 0;
 const device = 0
 
 function App() {
@@ -49,6 +49,7 @@ function App() {
   // const [device, setDevice] = React.useState<number>(0);
   const [startRuntime, setStartRuntime] = React.useState<number>(0);
   const [runtimes, setRuntimes] = React.useState<Runtimes>([]);
+  const [currentTime, setCurrentTime] = React.useState(0);
 
   const axiosGet = async (url: string, params: undefined | {[key: string]: number}) => {
     const data = await axios.get(`${routes[route]}${url}`, {params: params, withCredentials: false});
@@ -71,7 +72,11 @@ function App() {
 
   React.useEffect(()=> {
     const interval = setInterval(getActiveStatus, 2500);
-    return ()=>clearInterval(interval);
+    const timeInterval = setInterval(()=>setCurrentTime(new Date().getTime()), 1000)
+    return ()=>{
+      clearInterval(interval);
+      clearInterval(timeInterval);
+    }
   }, [])
 
   React.useEffect(()=>{
@@ -116,7 +121,7 @@ function App() {
           activeState.status?
             <div className="col">
               <h2 className="text-success">Running</h2>
-              <span className='btn btn-outline-success mb-2'>{getTimeDifference(activeState.data?.start_at||0, activeState.data?.last_ping||0)}</span>
+              <span className='btn btn-outline-success mb-2'>{getTimeDifference(activeState.data?.start_at||0, currentTime)}</span>
               <h5>Started: {new Date(activeState.data?.start_at || new Date().getTime()).toLocaleTimeString()}</h5>
             </div>
             :
